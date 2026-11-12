@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/@tgcloud/cli/schema/tgcloud.json",
+  "static": {
+    "source": "dist",
+    "spa": true,
+    "immutable": ["/assets/*"],
+    // CSP: скрипты только свои и SDK Telegram; 'wasm-unsafe-eval' — для декодера голосовых;
+    // data:/blob: — файлы приходят base64 и превращаются в blob-URL.
+    // frame-ancestors не задаём: Telegram Web открывает Mini App в iframe.
+    // X-Content-Type-Options задать нельзя: платформа держит его за собой, `tgcloud push` падает.
+    "headers": [{ "path": "/*", "set": {
+      "Referrer-Policy": "no-referrer",
+      "Content-Security-Policy": "default-src 'self'; script-src 'self' https://telegram.org 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' https://telegram.org data: blob:; worker-src 'self' blob:; font-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'"
+    } }]
+  }
+}

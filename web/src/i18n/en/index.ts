@@ -1,0 +1,23 @@
+import type { Key } from '../ru';
+import { common } from './common';
+import { settings } from './settings';
+import { sheets } from './sheets';
+import { onboarding } from './onboarding';
+import { lock } from './lock';
+import { stats } from './stats';
+import { conversation } from './conversation';
+import { contact } from './contact';
+import { deleteChat } from './deleteChat';
+import { event } from './event';
+import { feed } from './feed';
+import { chats } from './chats';
+import { search } from './search';
+import { media } from './media';
+import { ui } from './ui';
+import { viewer } from './viewer';
+import { composer } from './composer';
+import { charts } from './charts';
+import { app } from './app';
+
+const en: Record<Key, string> = { ...common, ...settings, ...sheets, ...onboarding, ...lock, ...stats, ...conversation, ...contact, ...deleteChat, ...event, ...feed, ...chats, ...search, ...media, ...ui, ...viewer, ...composer, ...charts, ...app };
+export default en;

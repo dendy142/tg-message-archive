@@ -1,0 +1,78 @@
+{
+  "user": {
+    "id": 7
+  },
+  "bot": {
+    "username": "archive_test_bot"
+  },
+  "connection": {
+    "connected": true,
+    "count": 1,
+    "canReply": true
+  },
+  "archive": {
+    "linked": false
+  },
+  "counts": {
+    "chats": 2,
+    "deleted": 1,
+    "edited": 1,
+    "favorite": 0,
+    "pendingMirror": 0,
+    "failedMirror": 0,
+    "excludedChats": 0,
+    "unreadEvents": 0
+  },
+  "settings": {
+    "notificationsEnabled": true,
+    "notifyOwn": false,
+    "timezone": "Europe/Moscow",
+    "tzSource": "manual",
+    "lang": "ru",
+    "langSource": "auto",
+    "retentionDays": null,
+    "keywords": [],
+    "readMode": "off",
+    "lockEnabled": false,
+    "lockMode": "off",
+    "hasPin": false,
+    "onboardedAt": null,
+    "lastSeenEventsAt": null,
+    "quietHours": null,
+    "notifyTypes": {
+      "deleted": true,
+      "deletedUnknown": true,
+      "edited": true,
+      "oneTime": true,
+      "keywords": true,
+      "wipe": true,
+      "rename": true
+    },
+    "hidePreview": false,
+    "keywordWholeWord": false,
+    "keywordExclude": [],
+    "keywordLoud": false,
+    "mirrorTypes": [
+      "photo",
+      "video",
+      "voice",
+      "document"
+    ],
+    "mirrorMaxMb": null,
+    "autoLockMin": null,
+    "purgeAfterDisconnectDays": null
+  },
+  "retentionChoices": [
+    null,
+    30,
+    90,
+    365
+  ],
+  "jobs": [],
+  "version": {
+    "version": "1.0.0",
+    "commit": "e2e"
+  },
+  "operator": false,
+  "onboarded": false
+}

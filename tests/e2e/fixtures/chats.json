@@ -1,0 +1,4 @@
+[
+  { "chatId": 555, "chatName": "Иван Петров", "total": 120, "incoming": 70, "deleted": 1, "edited": 1, "media": 0, "lastAgoMin": 3, "muted": false, "autoRead": false },
+  { "chatId": 777, "chatName": "Мария", "total": 1, "incoming": 1, "deleted": 1, "edited": 0, "media": 1, "lastAgoMin": 60, "muted": false, "autoRead": false }
+]

@@ -1,0 +1,13 @@
+node_modules
+dist
+.tgcloud
+.env
+.env*.local
+*.log
+*.tsbuildinfo
+coverage
+playwright-report
+test-results
+.claude/worktrees
+# временный вход scripts/admin.mjs для `tgcloud run` — не коммитится и не выкладывается
+tgcloud/endpoints/adminRun.js

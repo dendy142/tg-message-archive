@@ -1,0 +1,12 @@
+[
+  { "id": 1, "chatId": 555, "chatName": "Иван Петров", "senderName": "Иван Петров", "status": "deleted", "isDeleted": true,
+    "text": "Это сообщение потом удалили", "agoMin": 5, "eventAgoMin": 3, "deletedAgoMin": 3 },
+  { "id": 2, "chatId": 555, "chatName": "Иван Петров", "senderName": "Иван Петров", "status": "edited", "editCount": 1,
+    "text": "Встречаемся в пятницу", "agoMin": 30, "eventAgoMin": 20, "lastEditedAgoMin": 20,
+    "edits": [{ "id": 21, "oldText": "Встречаемся в четверг", "newText": "Встречаемся в пятницу", "oldHtml": null, "newHtml": null,
+      "diff": [{ "op": "eq", "text": "Встречаемся в " }, { "op": "del", "text": "четверг" }, { "op": "ins", "text": "пятницу" }],
+      "mediaReplaced": false, "editedAgoMin": 20 }] },
+  { "id": 3, "chatId": 777, "chatName": "Мария", "senderName": "Мария", "status": "deleted", "isDeleted": true,
+    "text": null, "caption": "Фото с моря", "mediaType": "photo", "mediaLabel": "Фото", "hasThumb": true, "previewable": true,
+    "mediaMeta": { "width": 1280, "height": 960 }, "agoMin": 90, "eventAgoMin": 60, "deletedAgoMin": 60 }
+]

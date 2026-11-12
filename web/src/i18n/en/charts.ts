@@ -1,0 +1,32 @@
+import type { Translation } from '../ru';
+import type { charts as ru } from '../ru/charts';
+
+export const charts: Translation<typeof ru> = {
+  'charts.activity.deleted': 'Deleted',
+  'charts.activity.captured': 'New',
+  'charts.activity.edited': 'Edits',
+  'charts.activity.byWeeks': 'By week · {n} {n|day|days}',
+  'charts.activity.total': 'Total for {n} {n|day|days}',
+  'charts.activity.before': 'Before',
+  'charts.activity.prevPeriod': 'Previous period',
+  'charts.activity.colAria': '{label}: {deleted} deleted, {captured} new, {edited} edits',
+  'charts.activity.peaks': 'Deletion spikes:',
+  'charts.heat.hint': 'Tap a cell to see the number',
+  'charts.heat.less': 'less',
+  'charts.heat.more': 'more',
+  'charts.split.aria': 'contact {a}, you {b}',
+  'charts.wd.mon': 'Mon',
+  'charts.wd.tue': 'Tue',
+  'charts.wd.wed': 'Wed',
+  'charts.wd.thu': 'Thu',
+  'charts.wd.fri': 'Fri',
+  'charts.wd.sat': 'Sat',
+  'charts.wd.sun': 'Sun',
+  'charts.wdLong.mon': 'Monday',
+  'charts.wdLong.tue': 'Tuesday',
+  'charts.wdLong.wed': 'Wednesday',
+  'charts.wdLong.thu': 'Thursday',
+  'charts.wdLong.fri': 'Friday',
+  'charts.wdLong.sat': 'Saturday',
+  'charts.wdLong.sun': 'Sunday',
+};

@@ -1,0 +1,153 @@
+name: Deploy to Telegram Serverless
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Один деплой за раз: tgcloud отклоняет пуш, если облако ушло вперёд.
+concurrency:
+  group: tgcloud-deploy
+  cancel-in-progress: false
+
+jobs:
+  # Без секрета TGCLOUD_TOKEN выкладка пропускается, а не падает. Проверка видит только
+  # секреты репозитория, не окружения.
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.token.outputs.ready }}
+    steps:
+      - id: token
+        env:
+          TGCLOUD_TOKEN: ${{ secrets.TGCLOUD_TOKEN }}
+        run: |
+          if [ -n "$TGCLOUD_TOKEN" ]; then
+            echo "ready=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=no" >> "$GITHUB_OUTPUT"
+            echo "::notice::Секрет TGCLOUD_TOKEN не задан — выкладка пропущена. Как подключить бота: docs/deploy.md"
+          fi
+
+  deploy:
+    needs: check
+    if: needs.check.outputs.ready == 'yes'
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: write # тег релиза
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # нужны теги
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+      # push --force: в CI нет локального снапшота .tgcloud/, без него обычный push отказывается
+      # работать; источник истины при деплое — репозиторий.
+      # Баг @tgcloud/cli: после успешной выкладки может упасть запись снапшота
+      # (writeSnapshotFile) — глотаем только этот сбой, остальные валят шаг.
+      - name: tgcloud deploy (push + migrate + webhook)
+        env:
+          TGCLOUD_TOKEN: ${{ secrets.TGCLOUD_TOKEN }}
+        run: |
+          set +e
+          run_tgcloud() {
+            local label="$1"; shift
+            local out; out="$("$@" 2>&1)"; local code=$?
+            printf '%s\n' "$out"
+            [ "$code" -eq 0 ] && return 0
+            if printf '%s' "$out" | grep -q "writeSnapshotFile"; then
+              echo "::warning::$label: деплой выполнен, упала лишь запись локального снапшота (баг CLI) — игнорирую"
+              return 0
+            fi
+            echo "::error::$label не прошёл (код $code)"
+            return "$code"
+          }
+          run_tgcloud "tgcloud push"         npx tgcloud push --force   || exit 1
+          run_tgcloud "tgcloud migrate"      npx tgcloud migrate --safe || exit 1
+
+          # Удаления схемы --safe не применяет. Применяем их сами, только если остаток плана
+          # целиком входит в ALLOWED_DROPS (через пробел: `таблица.колонка`, `таблица.индекс`);
+          # иначе предупреждаем — решать вручную через npm run migrate.
+          ALLOWED_DROPS=""
+          plan="$(npx tgcloud migrate --dry-run 2>&1 | sed 's/\x1b\[[0-9;]*m//g')"
+          printf '%s\n' "$plan"
+          targets="$(printf '%s\n' "$plan" | sed -nE 's/^@@ ([^:]+): .* @@$/\1/p' | sort -u)"
+          extra=""
+          for t in $targets; do
+            case " $ALLOWED_DROPS " in *" $t "*) continue ;; esac
+            # Индекс messages_fts* код строит сам, в схеме его нет.
+            case "$t" in messages_fts*) continue ;; esac
+            extra="$extra $t"
+          done
+          if [ -z "$targets" ]; then
+            echo "Удалять нечего."
+          elif [ -n "$extra" ]; then
+            echo "::warning::В плане миграции есть изменения вне ALLOWED_DROPS:$extra — удаления не применены, нужен npm run migrate"
+          else
+            # Повтор: SQLite удаляет колонку только после её индекса.
+            run_tgcloud "tgcloud migrate --yes" npx tgcloud migrate --yes \
+              || run_tgcloud "tgcloud migrate --yes (повтор)" npx tgcloud migrate --yes || exit 1
+          fi
+
+          run_tgcloud "tgcloud webhook sync" npx tgcloud webhook sync   || exit 1
+
+      # Настройки инстанса берутся из переменных репозитория, в коде их нет:
+      #   APP_URL      адрес Mini App; не задана — из префикса токена (app<id>:… → app<id>.tgcloud.ai)
+      #   OPERATOR_ID  Telegram id оператора; назначается, только если оператор ещё не задан
+      # Значения проверяются до подстановки в JSON.
+      - name: tgcloud instance settings
+        env:
+          TGCLOUD_TOKEN: ${{ secrets.TGCLOUD_TOKEN }}
+          APP_URL: ${{ vars.APP_URL }}
+          OPERATOR_ID: ${{ vars.OPERATOR_ID }}
+        run: |
+          url="${APP_URL:-https://${TGCLOUD_TOKEN%%:*}.tgcloud.ai}"
+          url="${url%/}"
+          if printf '%s' "$url" | grep -Eq '^https://app[0-9]+\.tgcloud\.ai$'; then
+            node scripts/admin.mjs "{\"setAppUrl\": \"$url\"}"
+            # Уже настроенную кнопку меню не трогает; сбой не валит деплой.
+            node scripts/admin.mjs '{"setMenuButton": true}' \
+              || echo "::warning::Кнопку меню настроить не удалось — задайте её вручную (docs/deploy.md, «Если что-то не так»)"
+          else
+            echo "::warning::APP_URL: нужен адрес вида https://app<id>.tgcloud.ai — адрес Mini App не записан, кнопки уведомлений останутся ссылками"
+          fi
+          if [ -z "$OPERATOR_ID" ]; then
+            echo "OPERATOR_ID не задана — оператора не назначаю."
+          elif printf '%s' "$OPERATOR_ID" | grep -Eq '^[0-9]+$'; then
+            node scripts/admin.mjs "{\"setOperator\": $OPERATOR_ID, \"ifUnset\": true}"
+          else
+            echo "::warning::OPERATOR_ID: нужен числовой Telegram id — оператор не назначен"
+          fi
+
+      # Самопроверка на живой платформе. set +e: иначе упавшая подстановка $(…) обрывает шаг
+      # до печати вывода.
+      - name: tgcloud selftest
+        env:
+          TGCLOUD_TOKEN: ${{ secrets.TGCLOUD_TOKEN }}
+        run: |
+          set +e
+          out="$(node scripts/admin.mjs '{"selftest": true}' 2>&1)"; code=$?
+          printf '%s\n' "$out"
+          if [ "$code" -ne 0 ] || printf '%s' "$out" | grep -q "selftest FAIL"; then
+            echo "::error::selftest не прошёл"; exit 1
+          fi
+
+      - name: tag release
+        run: |
+          tag="v$(node -p "require('./package.json').version")+${GITHUB_SHA::7}"
+          if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then echo "тег $tag уже есть"; exit 0; fi
+          git tag "$tag" "$GITHUB_SHA"
+          git push origin "refs/tags/$tag"

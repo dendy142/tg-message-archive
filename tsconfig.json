@@ -1,0 +1,24 @@
+{
+  // Типы tgcloud/ (JS с JSDoc) и тестов; `sdk` резолвится в локальную замену sdk-shim.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "strict": false,
+    "strictNullChecks": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "types": ["node"],
+    "paths": {
+      "sdk": ["./sdk-shim/index.js"],
+      "sdk/db": ["./sdk-shim/db.js"],
+      "sdk/api": ["./sdk-shim/api.js"],
+      "sdk/fetch": ["./sdk-shim/fetch.js"]
+    }
+  },
+  "include": ["tgcloud/**/*.js", "sdk-shim/**/*.js", "sdk-shim/**/*.d.ts", "tests/**/*.ts", "scripts/**/*.mjs", "scripts/**/*.js"]
+}

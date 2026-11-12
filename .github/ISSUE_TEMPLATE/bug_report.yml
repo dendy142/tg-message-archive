@@ -1,0 +1,51 @@
+name: Сообщить об ошибке
+description: Что-то работает не так, как описано
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Уязвимости сюда не пишите — порядок приватного сообщения описан в SECURITY.md.
+        Не прикладывайте чужую переписку, токены и адрес своего инстанса.
+  - type: textarea
+    id: what
+    attributes:
+      label: Что произошло
+      description: Что вы делали, что ожидали и что получилось.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Как воспроизвести
+      placeholder: |
+        1. …
+        2. …
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Версия
+      description: Версия и коммит из Настроек Mini App.
+    validations:
+      required: false
+  - type: dropdown
+    id: where
+    attributes:
+      label: Где проявляется
+      options:
+        - Бот (уведомления, команды)
+        - Mini App
+        - Группа-архив
+        - Развёртывание
+        - Другое
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Дополнительно
+      description: Текст ошибки, клиент Telegram и его версия, скриншоты без личных данных.
+    validations:
+      required: false
